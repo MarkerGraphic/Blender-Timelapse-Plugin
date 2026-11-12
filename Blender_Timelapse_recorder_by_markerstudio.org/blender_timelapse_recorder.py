@@ -176,6 +176,19 @@ def _encode_video(scene):
         scene.tl_last_error = "Could not run FFmpeg: " + str(exc)
         return False
 
+def _record_timer():
+    global _NEXT_CAPTURE
+
+    if not _TIMER_RUNNING or not _RECORDING:
+        return None  # Stop this Blender timer.
+
+    scene = bpy.context.scene
+    if scene is not None and time.monotonic() >= _NEXT_CAPTURE:
+        _capture_frame(scene)
+        _NEXT_CAPTURE = time.monotonic() + max(0.5, scene.tl_interval)
+
+    return _TIMER_INTERVAL  # Check again in 0.25 seconds.        
+
 
 class TL_OT_test_ffmpeg(bpy.types.Operator):
     bl_idname = "timelapse.test_ffmpeg"
